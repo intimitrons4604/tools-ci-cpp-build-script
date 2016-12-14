@@ -1,0 +1,70 @@
+apply plugin: 'cpp'
+
+repositories {
+    maven { url 'http://first.wpi.edu/FRC/roborio/maven/release' }
+}
+
+configurations {
+    wpilib
+}
+
+dependencies {
+    wpilib 'edu.wpi.first.wpilib.cmake:cpp-root:2016.5.1'
+}
+
+task getDep(type: Copy) {
+    from {
+        configurations.wpilib.collect { zipTree(it) }
+    }
+    into "$buildDir/wpi/"
+}
+
+model {
+    repositories {
+        lib(PrebuiltLibraries) {
+            wpilib {
+                headers.srcDir "$buildDir/wpi/include"
+            }
+        }
+    }
+
+    buildTypes {
+        debug
+    }
+
+    platforms {
+        arm {
+            architecture 'arm'
+            operatingSystem 'linux'
+        }
+    }
+
+    toolChains {
+        gcc(Gcc) {
+            target ('arm') {
+                cppCompiler.executable = 'arm-frc-linux-gnueabi-' + cppCompiler.executable
+                linker.executable = 'arm-frc-linux-gnueabi-' + linker.executable
+                assembler.executable = 'arm-frc-linux-gnueabi-' + assembler.executable
+            }
+        }
+    }
+
+    components {
+        cppRobotProject(NativeExecutableSpec) {
+            targetPlatform 'arm'
+
+            sources {
+                cpp {
+                    source {
+                        srcDir 'src'
+                        include '**/*.cpp'
+                    }
+
+                    lib library: 'wpilib', linkage: 'shared'
+                }
+            }
+        }
+    }
+}
+
+
