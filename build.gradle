@@ -5,12 +5,8 @@ repositories {
 }
 
 ext {
-    // CameraServer a.k.a. cscore
-    csCoreVersion = "+"
-    // NetworkTables a.k.a. ntcore
-    networkTablesVersion = "+"
-    wpilibVersion = "2016.5.1"
-    wpiUtilVersion = "+"
+    /* Dependency versions */
+    wpilibVersion = '2016.5.1'
 }
 
 configurations {
@@ -18,18 +14,10 @@ configurations {
 }
 
 dependencies {
-    wpilib "edu.wpi.first.wpilib.cmake:cpp-root:$wpilibVersion"
-    // TODO 2017
-    // wpilib "edu.wpi.first.wpilib:hal:$wpilibVersion"
-    // wpilib "edu.wpi.first.wpilibc:athena:$wpilibVersion"
-    //wpilib "edu.wpi.first.wpilib:wpiutil:$wpiUtilVersion:arm@zip"
-    //wpilib "edu.wpi.first.wpilib.networktables.cpp:NetworkTables:$networkTablesVersion:arm@zip"
-    //wpilib "edu.wpi.cscore.cpp:cscore:$csCoreVersion:athena-uberzip@zip"   
+    wpilib "edu.wpi.first.wpilib.cmake:cpp-root:$wpilibVersion@zip"  
 }
 
-task downloadWpilib(type: Sync) {
-    configurations.wpilib.files.each { file -> println file.name }
-
+task extractWpilib(type: Sync) {
     from {
         configurations.wpilib.collect { zipTree(it) }
     }
@@ -37,44 +25,42 @@ task downloadWpilib(type: Sync) {
 }
 
 model {
-    repositories {
-        lib(PrebuiltLibraries) {
-            wpilib {
-                headers.srcDir "$buildDir/wpilib/include"
-                binaries.withType(SharedLibraryBinary) {
-                    sharedLibraryFile = file("$buildDir/wpilib/lib/libwpilib_nonshared.a")
-                }
-            }
-        }
-    }
-
     buildTypes {
         debug
     }
 
     platforms {
-        arm {
-            architecture 'arm'
-            operatingSystem 'linux'
-        }
+        roboRio
     }
 
     toolChains {
         gcc(Gcc) {
-            target ('arm') {
-                cppCompiler.executable = 'arm-frc-linux-gnueabi-' + cppCompiler.executable
-                linker.executable = 'arm-frc-linux-gnueabi-' + linker.executable
-                assembler.executable = 'arm-frc-linux-gnueabi-' + assembler.executable
+            target ('roboRio') {
+                // Use FRC provided toolchain
+                def gccPrefix = 'arm-frc-linux-gnueabi-'
+                cppCompiler.executable = gccPrefix + cppCompiler.executable
+                linker.executable = gccPrefix + linker.executable
+                assembler.executable = gccPrefix + assembler.executable
 
                 cppCompiler.withArguments { args ->
                     args << '-std=c++1y' << '-Wformat=2' << '-Wall' << '-Wextra' << '-Werror' << '-pedantic'
                     args << '-Wno-psabi' << '-Wno-unused-parameter' << '-fPIC' << '-Og' << '-g3' << '-rdynamic'
                     args << '-Wno-error=deprecated-declarations'
-                    args.remove('-m32')
                 }
+
                 linker.withArguments { args ->
                     args << '-rdynamic'
-                    args.remove('m32')
+                }
+            }
+        }
+    }
+
+    repositories {
+        lib(PrebuiltLibraries) {
+            wpilib {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/libwpi.so")
                 }
             }
         }
@@ -82,15 +68,15 @@ model {
 
     components {
         cppRobotProject(NativeExecutableSpec) {
-            targetPlatform 'arm'
+            targetPlatform 'roboRio'
 
             binaries.all {
                 tasks.withType(CppCompile) {
-                    dependsOn downloadWpilib
+                    dependsOn extractWpilib
                 }
 
                 cppCompiler.args '-pthread', '-Wno-unused-variable'
-                linker.args "-L$buildDir/wpilib/lib", '-pthread', '-Wno-unused-variable', '-lwpi'
+                linker.args "-L$buildDir/wpilib/lib", '-pthread', '-Wno-unused-variable'
             }
 
             sources {
