@@ -26,7 +26,7 @@ task extractWpilib(type: Sync) {
 
 model {
     buildTypes {
-        debug
+        ci
     }
 
     platforms {
@@ -34,23 +34,13 @@ model {
     }
 
     toolChains {
-        gcc(Gcc) {
+        'frc-arm-gcc'(Gcc) {
             target ('roboRio') {
-                // Use FRC provided toolchain
                 def gccPrefix = 'arm-frc-linux-gnueabi-'
+
                 cppCompiler.executable = gccPrefix + cppCompiler.executable
                 linker.executable = gccPrefix + linker.executable
                 assembler.executable = gccPrefix + assembler.executable
-
-                cppCompiler.withArguments { args ->
-                    args << '-std=c++1y' << '-Wformat=2' << '-Wall' << '-Wextra' << '-Werror' << '-pedantic'
-                    args << '-Wno-psabi' << '-Wno-unused-parameter' << '-fPIC' << '-Og' << '-g3' << '-rdynamic'
-                    args << '-Wno-error=deprecated-declarations'
-                }
-
-                linker.withArguments { args ->
-                    args << '-rdynamic'
-                }
             }
         }
     }
@@ -69,14 +59,31 @@ model {
     components {
         cppRobotProject(NativeExecutableSpec) {
             targetPlatform 'roboRio'
+            targetBuildTypes 'ci'
+            baseName 'FRCUserProgram'
 
             binaries.all {
                 tasks.withType(CppCompile) {
                     dependsOn extractWpilib
                 }
 
-                cppCompiler.args '-pthread', '-Wno-unused-variable'
-                linker.args "-L$buildDir/wpilib/lib", '-pthread', '-Wno-unused-variable'
+                if (toolChain in Gcc && buildType == buildTypes.ci) {
+                    cppCompiler.args(
+                        '-std=c++1y',
+                        '-Werror',
+                        '-Wall',
+                        '-Wextra',
+                        '-Wpedantic',
+                        '-Wformat=2',
+                        // TODO remove this suppression
+                        '-Wno-unused-variable',
+                        '-O0'
+                    )
+
+                    linker.args(
+                        "-L$buildDir/wpilib/lib",
+                    )
+                }
             }
 
             sources {
