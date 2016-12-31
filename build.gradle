@@ -79,8 +79,6 @@ model {
                         '-Wextra',
                         '-Wpedantic',
                         '-Wformat=2',
-                        // TODO remove this suppression
-                        '-Wno-unused-variable',
                         '-O0'
                     )
 
@@ -93,8 +91,18 @@ model {
             sources {
                 cpp {
                     source {
-                        srcDir 'src'
-                        include '**/*.cpp'
+                        if (project.hasProperty('srcDir')) {
+                            def robotSrcDir = project.property('srcDir')
+                            logger.quiet("Using specified robot source directory: $robotSrcDir")
+
+                            srcDir robotSrcDir
+                            include '**/*.cpp'
+                        } else {
+                            logger.quiet('Assuming robot source directory is ./src, relative to build.gradle')
+
+                            srcDir 'src'
+                            include '**/*.cpp'
+                        }
                     }
 
                     lib library: 'wpilib', linkage: 'shared'
