@@ -9,6 +9,10 @@ ext {
     wpilibVersion = '2016.5.1'
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
+}
+
 configurations {
     wpilib
 }
