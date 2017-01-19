@@ -6,7 +6,8 @@ repositories {
 
 ext {
     /* Dependency versions */
-    wpilibVersion = '2016.5.1'
+    wpilibVersion = '+'
+    csCoreVersion = '+'
 }
 
 task wrapper(type: Wrapper) {
@@ -18,7 +19,10 @@ configurations {
 }
 
 dependencies {
-    wpilib "edu.wpi.first.wpilib.cmake:cpp-root:$wpilibVersion@zip"  
+    wpilib "edu.wpi.first.wpilibc:athena:$wpilibVersion@zip"
+    wpilib "edu.wpi.first.wpilib:athena-runtime:$wpilibVersion@zip"
+    wpilib "edu.wpi.first.wpilib:hal:$wpilibVersion@zip"
+    wpilib "edu.wpi.cscore.cpp:cscore:$csCoreVersion:athena-uberzip@zip"
 }
 
 task extractWpilib(type: Sync) {
