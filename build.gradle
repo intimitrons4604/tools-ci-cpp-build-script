@@ -6,8 +6,8 @@ repositories {
 
 ext {
     /* Dependency versions */
-    wpilibVersion = '+'
-    csCoreVersion = '+'
+    wpilibVersion = project.hasProperty('wpilibVersion') ? project.property('wpilibVersion') : '+'
+    csCoreVersion = project.hasProperty('csCoreVersion') ? project.property('csCoreVersion') : '+'
 }
 
 task wrapper(type: Wrapper) {
