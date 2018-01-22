@@ -4,32 +4,51 @@ repositories {
     maven { url 'http://first.wpi.edu/FRC/roborio/maven/release' }
 }
 
-ext {
-    /* Dependency versions */
-    wpilibVersion = project.hasProperty('wpilibVersion') ? project.property('wpilibVersion') : '+'
-    csCoreVersion = project.hasProperty('csCoreVersion') ? project.property('csCoreVersion') : '+'
-}
-
 task wrapper(type: Wrapper) {
     gradleVersion = '4.4.1'
 }
 
 configurations {
-    wpilib
+    wpilib_header
+    wpilib_lib
 }
 
 dependencies {
-    wpilib "edu.wpi.first.wpilibc:athena:$wpilibVersion@zip"
-    wpilib "edu.wpi.first.wpilib:athena-runtime:$wpilibVersion@zip"
-    wpilib "edu.wpi.first.wpilib:hal:$wpilibVersion@zip"
-    wpilib "edu.wpi.cscore.cpp:cscore:$csCoreVersion:athena-uberzip@zip"
+    wpilib_header 'edu.wpi.first.wpilibc:wpilibc:+:headers@zip'
+    wpilib_lib 'edu.wpi.first.wpilibc:wpilibc:+:linuxathena@zip'
+
+    wpilib_header 'edu.wpi.first.hal:hal:+:headers@zip'
+    wpilib_lib 'edu.wpi.first.hal:hal:+:linuxathena@zip'
+
+    wpilib_header 'edu.wpi.first.ntcore:ntcore-cpp:+:headers@zip'
+    wpilib_lib 'edu.wpi.first.ntcore:ntcore-cpp:+:linuxathena@zip'
+
+    wpilib_header 'edu.wpi.first.cscore:cscore-cpp:+:headers@zip'
+    wpilib_lib 'edu.wpi.first.cscore:cscore-cpp:+:linuxathena@zip'
+
+    wpilib_header 'edu.wpi.first.wpiutil:wpiutil-cpp:+:headers@zip'
+    wpilib_lib 'edu.wpi.first.wpiutil:wpiutil-cpp:+:linuxathena@zip'
+
+    wpilib_header 'org.opencv:opencv-cpp:+:headers@zip'
+    wpilib_lib 'org.opencv:opencv-cpp:+:linuxathena@zip'
+
+    wpilib_header 'edu.wpi.first.ni-libraries:ni-libraries:+:headers@zip'
+    wpilib_lib 'edu.wpi.first.ni-libraries:ni-libraries:+:linuxathena@zip'
 }
 
-task extractWpilib(type: Sync) {
+task extractWpilibHeaders(type: Sync) {
     from {
-        configurations.wpilib.collect { zipTree(it) }
+        configurations.wpilib_header.collect { zipTree(it) }
     }
-    into "$buildDir/wpilib/"
+    into "$buildDir/wpilib/include"
+}
+
+task extractWpilibLibraries(type: Sync) {
+    from {
+        configurations.wpilib_lib.collect { zipTree(it) }
+    }
+    into "$buildDir/wpilib/lib"
+
 }
 
 model {
@@ -55,10 +74,217 @@ model {
 
     repositories {
         lib(PrebuiltLibraries) {
-            wpilib {
+            wpilibc {
                 headers.srcDir "$buildDir/wpilib/include"
                 binaries.withType(SharedLibraryBinary) {
-                    sharedLibraryFile = file("$buildDir/wpilib/lib/libwpi.so")
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libwpilibc.so")
+                }
+            }
+
+            hal {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libwpiHal.so")
+                }
+            }
+
+            ntcore {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libntcore.so")
+                }
+            }
+
+            cscore {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libcscore.so")
+                }
+            }
+
+            wpiutil {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libwpiutil.so")
+                }
+            }
+
+            // TODO warn fixed version numbers
+            opencv_calib3d {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_calib3d.so.3.2")
+                }
+            }
+
+            opencv_core {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_core.so.3.2")
+                }
+            }
+
+            opencv_features2d {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_features2d.so.3.2")
+                }
+            }
+
+            opencv_flann {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_flann.so.3.2")
+                }
+            }
+
+            opencv_highgui {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_highgui.so.3.2")
+                }
+            }
+
+            opencv_imgcodecs {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_imgcodecs.so.3.2")
+                }
+            }
+
+            opencv_imgproc {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_imgproc.so.3.2")
+                }
+            }
+
+            // TODO no version number for some reason
+            opencv_java320 {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_java320.so")
+                }
+            }
+
+            opencv_ml {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_ml.so.3.2")
+                }
+            }
+
+            opencv_objdetect {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_objdetect.so.3.2")
+                }
+            }
+
+            opencv_photo {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_photo.so.3.2")
+                }
+            }
+
+            opencv_shape {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_shape.so.3.2")
+                }
+            }
+
+            opencv_stitching {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_stitching.so.3.2")
+                }
+            }
+
+            opencv_superres {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_superres.so.3.2")
+                }
+            }
+
+            opencv_video {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_video.so.3.2")
+                }
+            }
+
+            opencv_videoio {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_videoio.so.3.2")
+                }
+            }
+
+            opencv_videostab {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libopencv_videostab.so.3.2")
+                }
+            }
+
+            // TODO warn fixed version numbers
+            FRC_NetworkCommunication {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libFRC_NetworkCommunication.so.18.0.0")
+                }
+            }
+
+            NiFpga {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libNiFpga.so.17.0.0")
+                }
+            }
+
+            NiFpgaLv {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libNiFpgaLv.so.17.0.0")
+                }
+            }
+
+            niriodevenum {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libniriodevenum.so.17.0.0")
+                }
+            }
+
+            niriosession {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libniriosession.so.17.0.0")
+                }
+            }
+
+            NiRioSrv {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libNiRioSrv.so.17.0.0")
+                }
+            }
+
+            RoboRIO_FRC_ChipObject {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libRoboRIO_FRC_ChipObject.so.18.0.0")
+                }
+            }
+
+            // TODO no version number for some reason
+            visa {
+                headers.srcDir "$buildDir/wpilib/include"
+                binaries.withType(SharedLibraryBinary) {
+                    sharedLibraryFile = file("$buildDir/wpilib/lib/linux/athena/shared/libvisa.so")
                 }
             }
         }
@@ -72,7 +298,8 @@ model {
 
             binaries.all {
                 tasks.withType(CppCompile) {
-                    dependsOn extractWpilib
+                    dependsOn extractWpilibHeaders
+                    dependsOn extractWpilibLibraries
                 }
 
                 if (toolChain in Gcc && buildType == buildTypes.ci) {
@@ -84,10 +311,6 @@ model {
                         '-Wpedantic',
                         '-Wformat=2',
                         '-O0'
-                    )
-
-                    linker.args(
-                        "-L$buildDir/wpilib/lib",
                     )
                 }
             }
@@ -109,10 +332,38 @@ model {
                         }
                     }
 
-                    lib library: 'wpilib', linkage: 'shared'
+                    lib library: 'wpilibc', linkage: 'shared'
+                    lib library: 'hal', linkage: 'shared'
+                    lib library: 'ntcore', linkage: 'shared'
+                    lib library: 'cscore', linkage: 'shared'
+                    lib library: 'wpiutil', linkage: 'shared'
+                    lib library: 'opencv_calib3d', linkage: 'shared'
+                    lib library: 'opencv_core', linkage: 'shared'
+                    lib library: 'opencv_features2d', linkage: 'shared'
+                    lib library: 'opencv_flann', linkage: 'shared'
+                    lib library: 'opencv_highgui', linkage: 'shared'
+                    lib library: 'opencv_imgcodecs', linkage: 'shared'
+                    lib library: 'opencv_imgproc', linkage: 'shared'
+                    lib library: 'opencv_java320', linkage: 'shared'
+                    lib library: 'opencv_ml', linkage: 'shared'
+                    lib library: 'opencv_objdetect', linkage: 'shared'
+                    lib library: 'opencv_photo', linkage: 'shared'
+                    lib library: 'opencv_shape', linkage: 'shared'
+                    lib library: 'opencv_stitching', linkage: 'shared'
+                    lib library: 'opencv_superres', linkage: 'shared'
+                    lib library: 'opencv_video', linkage: 'shared'
+                    lib library: 'opencv_videoio', linkage: 'shared'
+                    lib library: 'opencv_videostab', linkage: 'shared'
+                    lib library: 'FRC_NetworkCommunication', linkage: 'shared'
+                    lib library: 'NiFpga', linkage: 'shared'
+                    lib library: 'NiFpgaLv', linkage: 'shared'
+                    lib library: 'niriodevenum', linkage: 'shared'
+                    lib library: 'niriosession', linkage: 'shared'
+                    lib library: 'NiRioSrv', linkage: 'shared'
+                    lib library: 'RoboRIO_FRC_ChipObject', linkage: 'shared'
+                    lib library: 'visa', linkage: 'shared'
                 }
             }
         }
     }
 }
-
