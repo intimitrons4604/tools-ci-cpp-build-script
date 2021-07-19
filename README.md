@@ -1,4 +1,7 @@
 # C++ Robot Project CI Build Tool
+
+**This repository is archived.** WPILib has introduced an official Gradle based robot project build.
+
 This repository contains a simple Gradle script that downloads WPILib and builds C++ robot code. It is intended to be used for CI builds.
 
 ## How to Use
